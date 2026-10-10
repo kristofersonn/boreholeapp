@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Schemă Tubare Foraj</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --panel-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent-filter: #d97706;
+            --border: #e2e8f0;
+            --text: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg-color); color: var(--text); padding: 10px; }
+
+        header { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        h1 { font-size: 1.2rem; color: #0f172a; }
+
+        .app-container { display: grid; grid-template-columns: 360px 1fr 260px; gap: 12px; height: calc(100vh - 70px); }
+        .panel { background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; overflow-y: auto; }
+
+        .panel-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+        .input-group { margin-bottom: 8px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 2px; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+        .base-depth-setting { display: flex; align-items: center; justify-content: space-between; background: #e2e8f0; padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 600; }
+        .base-depth-setting input { width: 80px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; text-align: right; }
+
+        .btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
+        .btn { padding: 8px 10px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s; font-size: 0.8rem; text-align: center; }
+        .btn-tube { background: #e0e7ff; color: #3730a3; }
+        .btn-tube:hover { background: #c7d2fe; }
+        .btn-filter { background: #fef3c7; color: #92400e; }
+        .btn-filter:hover { background: #fde68a; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 6px; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; width: 100%; margin-top: 6px; padding: 6px; font-size: 0.75rem; }
+        .btn-danger:hover { background: #fecaca; }
+        
+        .btn-clear-seq { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-clear-seq:hover { background: #ffe4e6; }
+
+        .custom-add { display: flex; gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 8px; border-radius: 6px; }
+        .custom-add input, .custom-add select { padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem; }
+        .custom-add input { width: 70px; }
+
+        .element-list { flex: 1; padding-right: 2px; display: flex; flex-direction: column; }
+        .element-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; background: #fff; }
+        .element-item.filter { border-left: 4px solid var(--accent-filter); }
+        .element-item.tube { border-left: 4px solid var(--primary); }
+        
+        .item-info { display: flex; flex-direction: column; font-size: 0.8rem; }
+        .item-info span.depth { font-size: 0.7rem; color: #64748b; }
+        .item-actions { display: flex; gap: 4px; align-items: center; }
+        .btn-icon { background: none; border: none; cursor: pointer; padding: 2px 6px; color: #64748b; font-size: 1rem; }
+        .btn-icon:hover { color: #ef4444; }
+
+        .empty-msg { text-align: center; color: #94a3b8; padding: 20px 8px; font-size: 0.8rem; border: 2px dashed #e2e8f0; border-radius: 6px; margin-top: 8px; }
+
+        .report-header-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.8rem; width: 100%; max-width: 480px; }
+        .report-header-card .title-row { grid-column: 1 / -1; font-weight: bold; font-size: 1rem; color: #0f172a; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+        .report-header-card .field { color: #475569; }
+        .report-header-card .field span { font-weight: 600; color: #0f172a; }
+        .report-header-card .notes-row { grid-column: 1 / -1; font-style: italic; color: #64748b; font-size: 0.75rem; margin-top: 2px; border-top: 1px dashed var(--border); padding-top: 2px; }
+
+        .canvas-container { flex: 1; display: flex; flex-direction: column; align-items: center; overflow-y: auto; overflow-x: auto; background: #ffffff; border-radius: 6px; position: relative; padding: 4px 0; width: 100%; }
+        svg { background: #ffffff; display: block; max-width: 100%; height: auto; }
+
+        .summary-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+        .summary-card h3 { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .summary-card .val { font-size: 1.2rem; font-weight: 700; color: #0f172a; }
+        .breakdown-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 6px; }
+        .breakdown-table th, .breakdown-table td { text-align: left; padding: 4px; border-bottom: 1px solid var(--border); }
+
+        details summary { font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--primary); margin-bottom: 6px; }
+
+        @media (max-width: 900px) {
+            body { padding: 6px; }
+            .app-container { grid-template-columns: 1fr; height: auto; display: flex; flex-direction: column; gap: 10px; }
+            .panel { max-height: none; overflow: visible; }
+            .canvas-container { overflow-x: auto; }
+            svg { width: 100%; min-width: 300px; }
+            header { flex-direction: column; align-items: flex-start; }
+            header .btn { width: 100%; }
+            .report-header-card { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            @page { size: A4 portrait; margin: 8mm; }
+            body { background: #ffffff !important; padding: 0 !important; color: #000 !important; font-size: 10pt; }
+            header, .panel:nth-child(1) { display: none !important; }
+            .app-container { display: flex !important; flex-direction: row !important; justify-content: space-between !important; height: auto !important; gap: 15px !important; }
+            .panel { border: none !important; padding: 0 !important; overflow: visible !important; height: auto !important; background: transparent !important; }
+            .panel:nth-child(2) { flex: 1 !important; }
+            .panel:nth-child(3) { width: 220px !important; }
+            .canvas-container { overflow: visible !important; height: auto !important; padding: 0 !important; }
+            svg { max-height: 240mm !important; width: auto !important; }
+            .report-header-card { max-width: 100% !important; margin-bottom: 4px !important; }
+            .summary-card { padding: 6px !important; margin-bottom: 6px !important; }
+            .summary-card .val { font-size: 1rem !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Generator Schemă Tubare Foraj</h1>
+        <button class="btn btn-primary" style="width: auto;" onclick="window.print()">Exportă / Printează PDF</button>
+    </header>
+
+    <div class="app-container">
+        <!-- Panel 1: Configuration & Controls -->
+        <div class="panel">
+            <div class="panel-title">Informații Proiect & Foraj</div>
+            
+            <div class="input-group">
+                <label for="metaTitle">Identificator Foraj / Nume Proiect</label>
+                <input id="metaTitle" type="text" value="FORAJ-01" oninput="triggerUpdate()">
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="metaDate">Data</label>
+                    <input id="metaDate" type="date" oninput="triggerUpdate()">
+                </div>
+                <div class="input-group">
+                    <label for="metaEngineerVal">Inginer / Operator</label>
+                    <input id="metaEngineerVal" type="text" placeholder="ex. Ion Popescu" oninput="triggerUpdate()">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="metaLocationVal">Locație / Coordonate</label>
+                <input id="metaLocationVal" type="text" placeholder="ex. Șantier Nord / 45.8N 22.9E" oninput="triggerUpdate()">
+            </div>
+
+            <div class="input-group">
+                <label for="metaNotesVal">Anotări / Observații</label>
+                <textarea id="metaNotesVal" rows="2" placeholder="ex. Tubulatură PVC, Pietriș mărgăritar 1-3mm" oninput="triggerUpdate()"></textarea>
+            </div>
+
+            <!-- Customization Settings -->
+            <details style="margin-bottom: 8px;">
+                <summary>🌐 Personalizare Etichete & Limbă</summary>
+                <div style="background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div class="input-group">
+                        <label>Titlu Principal Diagramă</label>
+                        <input id="lblDiagramHeader" type="text" value="Fișă Echipare și Tubare Foraj" oninput="triggerUpdate()">
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Etichetă Dată</label>
+                            <input id="lblDate" type="text" value="Data" oninput="triggerUpdate()">
+                        </div>
+                        <div class="input-group">
+                            <label>Etichetă Inginer</label>
+                            <input id="lblEngineer" type="text" value="Inginer" oninput="triggerUpdate()">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Etichetă Locație</label>
+                            <input id="lblLocation" type="text" value="Locație" oninput="triggerUpdate()">
+                        </div>
+                        <div class="input-group">
+                            <label>Etichetă Observații</label>
+                            <input id="lblNotes" type="text" value="Observații" oninput="triggerUpdate()">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Nivel Suprafață</label>
+                            <input id="lblTop" type="text" value="Suprafață / Cota 0" oninput="triggerUpdate()">
+                        </div>
+                        <div class="input-group">
+                            <label>Nivel Talpă Foraj</label>
+                            <input id="lblBottom" type="text" value="Talpă Foraj" oninput="triggerUpdate()">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Denumire Tub</label>
+                            <input id="lblTube" type="text" value="Tub Plin" oninput="triggerUpdate()">
+                        </div>
+                        <div class="input-group">
+                            <label>Denumire Filtru</label>
+                            <input id="lblFilter" type="text" value="Filtru" oninput="triggerUpdate()">
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="clearSavedData()">Resetează Toate Datele Salvate</button>
+                </div>
+            </details>
+
+            <div class="panel-title" style="margin-top: 2px;">Configurare Adâncime</div>
+            
+            <div class="base-depth-setting">
+                <label for="baseDepth">Adâncime Talpă (Baza):</label>
+                <div>
+                    <input id="baseDepth" type="number" step="0.5" value="20.0" oninput="triggerUpdate()"> m
+                </div>
+            </div>
+
+            <div class="panel-title">Adăugare Rapidă</div>
+            <div class="btn-group">
+                <button class="btn btn-tube" onclick="addElement('tube', 5)">+ 5m Tub</button>
+                <button class="btn btn-tube" onclick="addElement('tube', 4)">+ 4m Tub</button>
+                <button class="btn btn-filter" onclick="addElement('filter', 5)">+ 5m Filtru</button>
+                <button class="btn btn-filter" onclick="addElement('filter', 4)">+ 4m Filtru</button>
+                <button class="btn btn-filter" onclick="addElement('filter', 3)">+ 3m Filtru</button>
+                <button class="btn btn-filter" onclick="addElement('filter', 2)">+ 2m Filtru</button>
+            </div>
+
+            <div class="custom-add">
+                <select id="customType">
+                    <option value="tube">Tub Plin</option>
+                    <option value="filter">Filtru</option>
+                </select>
+                <input id="customLen" type="number" step="0.5" value="1.0" min="0.1" placeholder="Metri">
+                <button class="btn btn-primary" style="margin:0" onclick="addCustomElement()">Adaugă</button>
+            </div>
+
+            <div class="panel-title">
+                <span>Secvență Tubare (Jos → Sus)</span>
+                <button class="btn-clear-seq" onclick="clearSequence()">Șterge Secvența</button>
+            </div>
+            <div class="element-list" id="elementList"></div>
+        </div>
+
+        <!-- Panel 2: Visual Scheme Diagram -->
+        <div class="panel">
+            <div class="panel-title" id="panelDiagramTitle">Fișă Echipare și Tubare Foraj</div>
+            <div class="canvas-container" id="canvasContainer">
+                
+                <div class="report-header-card">
+                    <div class="title-row" id="displayTitle">FORAJ-01</div>
+                    <div class="field"><span id="lblDisplayDate">Data</span>: <span id="displayDate">—</span></div>
+                    <div class="field"><span id="lblDisplayEngineer">Inginer</span>: <span id="displayEngineer">—</span></div>
+                    <div class="field" style="grid-column: 1 / -1;"><span id="lblDisplayLocation">Locație</span>: <span id="displayLocation">—</span></div>
+                    <div class="notes-row" id="displayNotes" style="display: none;"></div>
+                </div>
+
+                <svg id="diagram" viewBox="0 0 500 750" preserveAspectRatio="xMidYMin meet" width="100%"></svg>
+            </div>
+        </div>
+
+        <!-- Panel 3: Live Summary Counter -->
+        <div class="panel">
+            <div class="panel-title">Centralizator / Sumar</div>
+
+            <div class="summary-card">
+                <h3>Lungime Totală Coloană</h3>
+                <div class="val" id="totalLength">0.00 m</div>
+            </div>
+
+            <div class="summary-card">
+                <h3>Număr Total Bucăți</h3>
+                <div class="val" id="totalCount">0</div>
+            </div>
+
+            <div class="panel-title" style="margin-top: 8px;">Centralizator Materiale</div>
+            <table class="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>Descriere Element</th>
+                        <th>Buc.</th>
+                        <th>Total (m)</th>
+                    </tr>
+                </thead>
+                <tbody id="breakdownBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'borehole_builder_ro_v5';
+
+        let baseDepth = 20.0;
+        let stringData = [];
+
+        function saveToStorage() {
+            const state = {
+                baseDepth: parseFloat(document.getElementById('baseDepth').value) || 20.0,
+                stringData: stringData,
+                metaTitle: document.getElementById('metaTitle').value,
+                metaDate: document.getElementById('metaDate').value,
+                metaEngineerVal: document.getElementById('metaEngineerVal').value,
+                metaLocationVal: document.getElementById('metaLocationVal').value,
+                metaNotesVal: document.getElementById('metaNotesVal').value,
+                lblDiagramHeader: document.getElementById('lblDiagramHeader').value,
+                lblDate: document.getElementById('lblDate').value,
+                lblEngineer: document.getElementById('lblEngineer').value,
+                lblLocation: document.getElementById('lblLocation').value,
+                lblNotes: document.getElementById('lblNotes').value,
+                lblTop: document.getElementById('lblTop').value,
+                lblBottom: document.getElementById('lblBottom').value,
+                lblTube: document.getElementById('lblTube').value,
+                lblFilter: document.getElementById('lblFilter').value
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) {
+                document.getElementById('metaDate').valueAsDate = new Date();
+                return;
+            }
+
+            try {
+                const state = JSON.parse(saved);
+                if (state.baseDepth !== undefined) {
+                    baseDepth = parseFloat(state.baseDepth);
+                    document.getElementById('baseDepth').value = baseDepth;
+                }
+                if (Array.isArray(state.stringData)) stringData = state.stringData;
+
+                if (state.metaTitle !== undefined) document.getElementById('metaTitle').value = state.metaTitle;
+                if (state.metaDate !== undefined) document.getElementById('metaDate').value = state.metaDate;
+                if (state.metaEngineerVal !== undefined) document.getElementById('metaEngineerVal').value = state.metaEngineerVal;
+                if (state.metaLocationVal !== undefined) document.getElementById('metaLocationVal').value = state.metaLocationVal;
+                if (state.metaNotesVal !== undefined) document.getElementById('metaNotesVal').value = state.metaNotesVal;
+
+                if (state.lblDiagramHeader !== undefined) document.getElementById('lblDiagramHeader').value = state.lblDiagramHeader;
+                if (state.lblDate !== undefined) document.getElementById('lblDate').value = state.lblDate;
+                if (state.lblEngineer !== undefined) document.getElementById('lblEngineer').value = state.lblEngineer;
+                if (state.lblLocation !== undefined) document.getElementById('lblLocation').value = state.lblLocation;
+                if (state.lblNotes !== undefined) document.getElementById('lblNotes').value = state.lblNotes;
+                if (state.lblTop !== undefined) document.getElementById('lblTop').value = state.lblTop;
+                if (state.lblBottom !== undefined) document.getElementById('lblBottom').value = state.lblBottom;
+                if (state.lblTube !== undefined) document.getElementById('lblTube').value = state.lblTube;
+                if (state.lblFilter !== undefined) document.getElementById('lblFilter').value = state.lblFilter;
+            } catch (e) {
+                console.error("Eroare la încărcarea datelor salvate:", e);
+                document.getElementById('metaDate').valueAsDate = new Date();
+            }
+        }
+
+        function clearSavedData() {
+            if (confirm("Sigur doriți să ștergeți toate datele salvate și să resetați formularul?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function clearSequence() {
+            if (stringData.length === 0) return;
+            if (confirm("Sigur doriți să ștergeți secvența curentă de tubare?")) {
+                stringData = [];
+                triggerUpdate();
+            }
+        }
+
+        function triggerUpdate() {
+            const bdVal = parseFloat(document.getElementById('baseDepth').value);
+            if (!isNaN(bdVal)) {
+                baseDepth = bdVal;
+            }
+            renderList();
+            renderDiagram();
+            renderSummary();
+            updateMetadata();
+            saveToStorage();
+        }
+
+        function updateMetadata() {
+            const diagramHeader = document.getElementById('lblDiagramHeader').value || 'Fișă Echipare și Tubare Foraj';
+            document.getElementById('panelDiagramTitle').innerText = diagramHeader;
+
+            const title = document.getElementById('metaTitle').value || '—';
+            const date = document.getElementById('metaDate').value || '—';
+            const engineer = document.getElementById('metaEngineerVal').value || '—';
+            const location = document.getElementById('metaLocationVal').value || '—';
+            const notes = document.getElementById('metaNotesVal').value;
+
+            const wDate = document.getElementById('lblDate').value || 'Data';
+            const wEng = document.getElementById('lblEngineer').value || 'Inginer';
+            const wLoc = document.getElementById('lblLocation').value || 'Locație';
+            const wNotes = document.getElementById('lblNotes').value || 'Observații';
+
+            document.getElementById('displayTitle').innerText = title;
+            document.getElementById('lblDisplayDate').innerText = wDate;
+            document.getElementById('displayDate').innerText = date;
+            
+            document.getElementById('lblDisplayEngineer').innerText = wEng;
+            document.getElementById('displayEngineer').innerText = engineer;
+            
+            document.getElementById('lblDisplayLocation').innerText = wLoc;
+            document.getElementById('displayLocation').innerText = location;
+
+            const notesEl = document.getElementById('displayNotes');
+            if (notes && notes.trim() !== '') {
+                notesEl.innerText = `${wNotes}: ${notes}`;
+                notesEl.style.display = 'block';
+            } else {
+                notesEl.style.display = 'none';
+            }
+        }
+
+        function addElement(type, length) {
+            stringData.push({
+                id: Date.now() + Math.random(),
+                type: type,
+                length: parseFloat(length)
+            });
+            triggerUpdate();
+        }
+
+        function addCustomElement() {
+            const type = document.getElementById('customType').value;
+            const length = parseFloat(document.getElementById('customLen').value);
+            if (length && length > 0) {
+                addElement(type, length);
+            }
+        }
+
+        function removeElement(index) {
+            stringData.splice(index, 1);
+            triggerUpdate();
+        }
+
+        function moveElement(index, direction) {
+            if (index + direction < 0 || index + direction >= stringData.length) return;
+            const temp = stringData[index];
+            stringData[index] = stringData[index + direction];
+            stringData[index + direction] = temp;
+            triggerUpdate();
+        }
+
+        function updateElementLength(index, newLength) {
+            const val = parseFloat(newLength);
+            if (val > 0) {
+                stringData[index].length = val;
+                triggerUpdate();
+            }
+        }
+
+        function renderList() {
+            const listEl = document.getElementById('elementList');
+            listEl.innerHTML = '';
+
+            if (stringData.length === 0) {
+                listEl.innerHTML = '<div class="empty-msg">Niciun element adăugat.<br>Folosiți opțiunile de mai sus pentru a construi coloana de jos în sus.</div>';
+                return;
+            }
+
+            const termTube = (document.getElementById('lblTube').value || 'Tub Plin').toUpperCase();
+            const termFilter = (document.getElementById('lblFilter').value || 'Filtru').toUpperCase();
+
+            for (let i = stringData.length - 1; i >= 0; i--) {
+                const item = stringData[i];
+                
+                let startDepth = baseDepth;
+                for (let j = 0; j < i; j++) {
+                    startDepth -= stringData[j].length;
+                }
+                const endDepth = startDepth - item.length;
+                const typeName = item.type === 'tube' ? termTube : termFilter;
+
+                const div = document.createElement('div');
+                div.className = `element-item ${item.type}`;
+                div.innerHTML = `
+                    <div class="item-info">
+                        <strong>${typeName} (${item.length}m) ${i === 0 ? '[TALPĂ FORAJ]' : ''}</strong>
+                        <span class="depth">Adâncime: ${startDepth.toFixed(1)}m → ${endDepth.toFixed(1)}m</span>
+                    </div>
+                    <div class="item-actions">
+                        <input type="number" step="0.5" style="width: 50px; text-align: center;" value="${item.length}" onchange="updateElementLength(${i}, this.value)">
+                        <button class="btn-icon" onclick="moveElement(${i}, 1)">▲</button>
+                        <button class="btn-icon" onclick="moveElement(${i}, -1)">▼</button>
+                        <button class="btn-icon" onclick="removeElement(${i})">✕</button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            }
+        }
+
+        function renderSummary() {
+            const totalStringLength = stringData.reduce((acc, curr) => acc + curr.length, 0);
+
+            document.getElementById('totalLength').innerText = `${totalStringLength.toFixed(2)} m`;
+            document.getElementById('totalCount').innerText = stringData.length;
+
+            const termTube = document.getElementById('lblTube').value || 'Tub Plin';
+            const termFilter = document.getElementById('lblFilter').value || 'Filtru';
+
+            const breakdown = {};
+            stringData.forEach(item => {
+                const typeLabel = item.type === 'tube' ? termTube : termFilter;
+                const key = `${typeLabel} (${item.length}m)`;
+                if (!breakdown[key]) {
+                    breakdown[key] = { qty: 0, totalLen: 0 };
+                }
+                breakdown[key].qty += 1;
+                breakdown[key].totalLen += item.length;
+            });
+
+            const tbody = document.getElementById('breakdownBody');
+            tbody.innerHTML = '';
+            
+            if (stringData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Fără elemente</td></tr>';
+                return;
+            }
+
+            for (const [name, stats] of Object.entries(breakdown)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${stats.qty}</td>
+                    <td>${stats.totalLen.toFixed(1)} m</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        function renderDiagram() {
+            const svg = document.getElementById('diagram');
+            svg.innerHTML = '';
+
+            const totalStringLength = stringData.reduce((acc, curr) => acc + curr.length, 0);
+            
+            if (totalStringLength === 0) {
+                const emptyText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                emptyText.setAttribute('x', '250');
+                emptyText.setAttribute('y', '300');
+                emptyText.setAttribute('font-size', '14');
+                emptyText.setAttribute('fill', '#94a3b8');
+                emptyText.setAttribute('text-anchor', 'middle');
+                emptyText.textContent = 'Diagrama se va genera automat';
+                svg.appendChild(emptyText);
+                return;
+            }
+
+            const width = 500;
+            const marginTop = 50;
+            const marginBottom = 50;
+            const pipeWidth = 55;
+            const pipeX = (width - pipeWidth) / 2;
+            const rulerX = pipeX - 65;
+            const labelX = pipeX + pipeWidth + 15;
+
+            const maxRenderHeight = 600;
+            const scale = (maxRenderHeight - marginTop - marginBottom) / totalStringLength;
+            const totalSvgHeight = Math.max(700, totalStringLength * scale + marginTop + marginBottom);
+            svg.setAttribute('viewBox', `0 0 ${width} ${totalSvgHeight}`);
+
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            defs.innerHTML = `
+                <pattern id="filterPattern" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="10" stroke="#d97706" stroke-width="4" />
+                </pattern>
+            `;
+            svg.appendChild(defs);
+
+            const labelBottom = document.getElementById('lblBottom').value || 'Talpă Foraj';
+            const labelTop = document.getElementById('lblTop').value || 'Suprafață / Cota 0';
+            const termTube = (document.getElementById('lblTube').value || 'Tub Plin').toUpperCase();
+            const termFilter = (document.getElementById('lblFilter').value || 'Filtru').toUpperCase();
+
+            const bottomCapY = totalSvgHeight - marginBottom;
+            const bottomCap = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            bottomCap.setAttribute('x1', pipeX - 10);
+            bottomCap.setAttribute('y1', bottomCapY);
+            bottomCap.setAttribute('x2', pipeX + pipeWidth + 10);
+            bottomCap.setAttribute('y2', bottomCapY);
+            bottomCap.setAttribute('stroke', '#000');
+            bottomCap.setAttribute('stroke-width', '4');
+            svg.appendChild(bottomCap);
+
+            const bottomText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            bottomText.setAttribute('x', pipeX - 85);
+            bottomText.setAttribute('y', bottomCapY + 16);
+            bottomText.setAttribute('font-size', '11');
+            bottomText.setAttribute('font-weight', 'bold');
+            bottomText.textContent = `▲ ${labelBottom} (${baseDepth.toFixed(1)}m)`;
+            svg.appendChild(bottomText);
+
+            let currentBottomY = bottomCapY;
+            let currentDepth = baseDepth;
+            let finalTopY = currentBottomY;
+
+            stringData.forEach((item) => {
+                const itemPxHeight = item.length * scale;
+                const topY = currentBottomY - itemPxHeight;
+                const bottomY = currentBottomY;
+                finalTopY = topY;
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', pipeX);
+                rect.setAttribute('y', topY);
+                rect.setAttribute('width', pipeWidth);
+                rect.setAttribute('height', itemPxHeight);
+                rect.setAttribute('stroke', '#1e293b');
+                rect.setAttribute('stroke-width', '2');
+
+                if (item.type === 'tube') {
+                    rect.setAttribute('fill', '#e0e7ff');
+                } else {
+                    rect.setAttribute('fill', 'url(#filterPattern)');
+                }
+                svg.appendChild(rect);
+
+                const joint = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                joint.setAttribute('x1', pipeX - 4);
+                joint.setAttribute('y1', topY);
+                joint.setAttribute('x2', pipeX + pipeWidth + 4);
+                joint.setAttribute('y2', topY);
+                joint.setAttribute('stroke', '#000');
+                joint.setAttribute('stroke-width', '3');
+                svg.appendChild(joint);
+
+                const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                tick.setAttribute('x1', rulerX);
+                tick.setAttribute('y1', bottomY);
+                tick.setAttribute('x2', pipeX);
+                tick.setAttribute('y2', bottomY);
+                tick.setAttribute('stroke', '#94a3b8');
+                tick.setAttribute('stroke-dasharray', '2,2');
+                svg.appendChild(tick);
+
+                const depthLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                depthLabel.setAttribute('x', rulerX - 4);
+                depthLabel.setAttribute('y', bottomY + 4);
+                depthLabel.setAttribute('font-size', '10');
+                depthLabel.setAttribute('text-anchor', 'end');
+                depthLabel.setAttribute('fill', '#475569');
+                depthLabel.textContent = `${currentDepth.toFixed(1)} m`;
+                svg.appendChild(depthLabel);
+
+                const itemTypeLabel = item.type === 'tube' ? termTube : termFilter;
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', labelX);
+                label.setAttribute('y', topY + (itemPxHeight / 2) + 4);
+                label.setAttribute('font-size', '11');
+                label.setAttribute('font-weight', '500');
+                label.setAttribute('fill', item.type === 'filter' ? '#b45309' : '#1e40af');
+                label.textContent = `${item.length}m ${itemTypeLabel}`;
+                svg.appendChild(label);
+
+                currentDepth -= item.length;
+                currentBottomY = topY;
+            });
+
+            const topDepth = baseDepth - totalStringLength;
+            const surfaceLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            surfaceLine.setAttribute('x1', pipeX - 85);
+            surfaceLine.setAttribute('y1', finalTopY);
+            surfaceLine.setAttribute('x2', pipeX + pipeWidth + 130);
+            surfaceLine.setAttribute('y2', finalTopY);
+            surfaceLine.setAttribute('stroke', '#000');
+            surfaceLine.setAttribute('stroke-width', '2');
+            svg.appendChild(surfaceLine);
+
+            const surfaceText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            surfaceText.setAttribute('x', pipeX - 85);
+            surfaceText.setAttribute('y', finalTopY - 10);
+            surfaceText.setAttribute('font-size', '11');
+            surfaceText.setAttribute('font-weight', 'bold');
+            surfaceText.textContent = `▼ ${labelTop} (${topDepth.toFixed(1)}m)`;
+            svg.appendChild(surfaceText);
+
+            const topTick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            topTick.setAttribute('x1', rulerX);
+            topTick.setAttribute('y1', finalTopY);
+            topTick.setAttribute('x2', pipeX);
+            topTick.setAttribute('y2', finalTopY);
+            topTick.setAttribute('stroke', '#94a3b8');
+            topTick.setAttribute('stroke-dasharray', '2,2');
+            svg.appendChild(topTick);
+
+            const topDepthLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            topDepthLabel.setAttribute('x', rulerX - 4);
+            topDepthLabel.setAttribute('y', finalTopY + 4);
+            topDepthLabel.setAttribute('font-size', '10');
+            topDepthLabel.setAttribute('font-weight', 'bold');
+            topDepthLabel.setAttribute('text-anchor', 'end');
+            topDepthLabel.setAttribute('fill', '#0f172a');
+            topDepthLabel.textContent = `${topDepth.toFixed(1)} m`;
+            svg.appendChild(topDepthLabel);
+        }
+
+        // Initialize state on load
+        loadFromStorage();
+        triggerUpdate();
+    </script>
+</body>
+</html>
